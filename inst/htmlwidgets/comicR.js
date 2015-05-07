@@ -6,15 +6,17 @@ HTMLWidgets.widget({
 
   initialize: function(el, width, height) {
 
-    return {
-      // TODO: add instance fields as required
-    }
+    return { }
 
   },
 
   renderValue: function(el, x, instance) {
 
-    el.innerText = x.message;
+    if (x.selector ===  null) {
+      [].forEach.call(document.getElementsByTagName('svg'),function(el){COMIC.magic(el)})
+    } else {
+      [].forEach.call(document.querySelectorAll(x.selector),function(el){COMIC.magic(el)})
+    }
 
   },
 

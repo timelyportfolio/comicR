@@ -1,0 +1,10 @@
+Package: comicR
+Type: Package
+Title: comic (xkcd-like) effects for R output
+Version: 0.1
+Date: 2015-05-07
+Author: Who wrote it
+Maintainer: Kent Russell<kent.russell@timelyportfolio.com>
+Description: More about what it does (maybe more than one line)
+License: MIT + file LICENSE
+LazyData: TRUE
