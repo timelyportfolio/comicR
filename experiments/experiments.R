@@ -18,7 +18,7 @@ browsable(
 
 browsable(
   tagList(
-    HTML(saveXML(svgPlot({plot(1:50)})))
+    HTML(saveXML(svgPlot({plot(1:10, type = "b", bty = "l")}, height=4, width = 6)))
     , comicR(  )
   )
 )
