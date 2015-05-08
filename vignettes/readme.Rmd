@@ -1,0 +1,205 @@
+---
+title: "Comic Options for R Output"
+author: "Kent Russell"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Comic Options for R Output}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r echo=F}
+### get knitr just the way we like it
+
+knitr::opts_chunk$set(
+  message = FALSE
+  , warning = FALSE
+  , error = FALSE
+  , tidy = FALSE
+  , cache = FALSE
+)
+
+```
+
+In this [Ted Talk](http://www.ted.com/talks/scott_mccloud_on_comics?language=en) and his book [Understanding Comics](http://www.amazon.com/Understanding-Comics-The-Invisible-Art/dp/006097625X), Scott McCloud discusses his theory of iconic identification.  In his theory he claims that we identify more with cartoons and icons than realistic images and words.  Assuming this is true and assuming that it can be applied to output from `R`, some package authors have offered some packages to cartoonize `R` graphs.  I doubt seriously that this is a complete list.
+
+1. [xkcd](http://cran.r-project.org/web/packages/xkcd/index.html)
+2. [phytools `xkcdTree`](http://www.phytools.org/static.help/xkcdTree.html)
+3. [RXKCD](http://cran.r-project.org/web/packages/RXKCD/index.html)
+
+For even more fun, here is [xkcd in Fortran](http://implicitnone.com/xkcd-plots-fortran/).
+
+Despite the above list, there is still not a comprehensive option in R to cartoonize images, so I thought I would try to tackle cartoonizing with `comicR` leveraging [`comic.js`](https://github.com/balint42/comic.js).  This little `htmlwidget` is far from comprehensive, but it can apply to nearly all `R` graphical output.
+
+### Installation
+
+`comicR` is not on CRAN, so please install with `devtools::install_github()` as demonstrated below.
+
+```{r eval = F}
+devtools::install_github("timelyportfolio/comicR")
+```
+
+### Base `graphics`
+
+Handwritten fonts with `extrafont` such as [Permanent Marker](https://www.google.com/fonts/specimen/Permanent+Marker) from Google webfonts and setting `lty=2,lwd=2` gets us pretty close to a cartoon-like graph.
+
+```{r fig.width=6, fig.height=4}
+library(extrafont)
+
+plot(
+  1:10, type = "b", bty = "l", col="violetred3"
+  , family = "Permanent Marker" # use Permanent Marker font from Google Fonts
+  , lty = 2, lwd = 2            # darker and dashed lines look more comic like to me
+)
+```
+
+You might notice though the axes are too straight for a cartoon.  `comicR` with some `SVG` and [`comic.js`](https://github.com/balint42/comic.js) magic will complete the effect.  The packages `SVGAnnotation`, `XML`, and `htmltools` will also be very helpful in our cartoon quest.  **Note: currently not working in RStudio Viewer**.
+
+```{r}
+library(htmltools)
+library(SVGAnnotation)
+library(XML)
+library(comicR)
+
+tagList(
+  tags$div(
+    id = "comic_noconfig"
+    ,tags$h3( "comicR with defaults" )
+    ,HTML(
+      saveXML(
+        svgPlot({plot(1:10, type = "b", bty = "l", col="paleturquoise3")}, height=4, width = 6)
+      )
+    )
+  )
+  ,comicR( "#comic_noconfig" )
+  ,tags$div(
+    id = "comic_withconfig"
+    ,tags$h3( "comicR with ff config = 3" )
+    ,HTML(
+      #  handle glyph id conflicts
+      gsub(
+        x = saveXML(
+          svgPlot({plot(1:10, type = "b", bty = "l", col="plum3")}, height=4, width = 6)
+        )
+        , pattern = "glyph"
+        , replacement = "svg2-glyph"
+      )
+    )
+  )
+  ,comicR( "#comic_withconfig", ff = 3 )
+  ,tags$div(
+    id = "justr-withcomic"
+    ,tags$h3( "comicR + extrafont Permanent Marker" )
+    ,HTML(
+      #  handle glyph id conflicts
+      gsub(
+        x = saveXML(
+          svgPlot(
+            {
+              plot(1:10, type = "b", bty = "l", col="chocolate3"
+               , family = "Permanent Marker" # use Permanent Marker font from Google Fonts
+               , lty = 2, lwd = 2            # darker and dashed lines look more comic like to me
+              )
+            }
+            , height=4, width = 6
+          )
+        )
+        , pattern = "glyph"
+        , replacement = "svg4-glyph"
+      )
+    )
+  )
+  ,comicR( "#justr-withcomic", ff=5 )
+)
+```
+
+### Lattice graphics
+
+```{r}
+
+library(lattice)
+library(gridSVG)
+library(pipeR)
+
+dev.new( height = 10, width = 10, noRStudioGD = T )
+dev.set(which = tail(dev.list(),1))
+dotplot(variety ~ yield | year * site, data=barley)
+dot_svg <- grid.export(name="")$svg
+dev.off()
+
+
+tagList(
+  tags$div(
+    id = "lattice-comic"
+    ,tags$h3("lattice plot with comicR and Google font")
+    ,HTML(saveXML(addCSS(
+      dot_svg
+      , I("svg text { font-family : Architects Daughter; }")
+    )))
+  )
+  ,comicR( "#lattice-comic", ff = 5 )
+)# %>>%
+#  attachDependencies(
+#    htmlDependency(
+#      name = "ArchitectsDaughter"
+#      ,version = "0.1"
+#      ,src = c(href='http://fonts.googleapis.com/css?family=Architects+Daughter')
+#      ,stylesheet = ""
+#    )
+#  )
+```
+
+
+### DiagrammeR graphics
+
+```{r}
+library(DiagrammeR)
+
+#  using example from DiagrammeR Readme.md
+#  https://github.com/rich-iannone/DiagrammeR
+grViz("
+digraph boxes_and_circles {
+
+  # a 'graph' statement
+  graph [overlap = true]
+
+  # several 'node' statements
+  node [shape = box,
+        fontname = Helvetica]
+  A; B; C; D; E; F
+
+  node [shape = circle,
+        fixedsize = true,
+        width = 0.9] // sets as circles
+  1; 2; 3; 4; 5; 6; 7; 8
+
+  # several 'edge' statements
+  A->1; B->2; B->3; B->4; C->A
+  1->D; E->A; 2->4; 1->5; 1->F
+  E->6; 4->6; 5->7; 6->7; 3->8
+}
+") %>>%
+  exportSVG %>>%
+  (
+    tagList(
+      tags$div(
+        id = "diagrammer_example"
+        ,tags$style("#diagrammer_example text {font-family:Permanent Marker;}")
+        ,tags$h3("comicR + DiagrammeR")
+        ,HTML(.)
+        ,comicR("#diagrammer_example", ff=3)
+      )
+    )
+  )
+```
+
+
+### Thanks
+
+Thanks so much
+
+- [`comic.js`](https://github.com/balint42/comic.js) from Balint Morvai
+- Ramnath Vaidyanathan and RStudio for `htmlwidgets`
+- all the contributors to `R` and `JavaScript`

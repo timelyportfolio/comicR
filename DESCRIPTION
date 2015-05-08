@@ -8,3 +8,5 @@ Maintainer: Kent Russell<kent.russell@timelyportfolio.com>
 Description: More about what it does (maybe more than one line)
 License: MIT + file LICENSE
 LazyData: TRUE
+Suggests: knitr
+VignetteBuilder: knitr

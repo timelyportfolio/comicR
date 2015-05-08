@@ -8,6 +8,7 @@ comicR(selector = NULL, ff = NULL, ffc = NULL, fsteps = NULL,
   msteps = NULL, width = 0, height = 0)
 }
 \description{
-<Add Description>
+Sometimes less precision is better as proven by xkcd.  This function will convert
+SVG plots from R to a comic version.
 }
 

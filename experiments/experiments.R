@@ -2,28 +2,114 @@ library(comicR)
 library(htmltools)
 library(SVGAnnotation)
 library(XML)
+library(extrafont)
+library(pipeR)
 
-tf <- tempfile()
-png( file = tf, height = 400, width = 600 )
-  plot(1:50)
+
+browsable(
+  tagList(
+    tags$div(
+      id = "comic_noconfig"
+      ,tags$h3( "comicR with defaults" )
+      ,HTML(
+        saveXML(
+          svgPlot({plot(1:10, type = "b", bty = "l", col="paleturquoise3")}, height=4, width = 6)
+        )
+      )
+    )
+    ,comicR( "#comic_noconfig" )
+    ,tags$div(
+      id = "comic_withconfig"
+      ,tags$h3( "comicR with ff config = 3" )
+      ,HTML(
+        #  handle glyph id conflicts
+        gsub(
+          x = saveXML(
+            svgPlot({plot(1:10, type = "b", bty = "l", col="plum3")}, height=4, width = 6)
+          )
+          , pattern = "glyph"
+          , replacement = "svg2-glyph"
+        )
+      )
+    )
+    ,comicR( "#comic_withconfig", ff = 3 )
+    ,tags$div(
+      id = "justr"
+      ,tags$h3( "straight from R" )
+      ,HTML(
+        #  handle glyph id conflicts
+        gsub(
+          x = saveXML(
+            svgPlot(
+              {
+                plot(1:10, type = "b", bty = "l", col="violetred3"
+                 , family = "Permanent Marker" # use Permanent Marker font from Google Fonts
+                 , lty = 2, lwd = 2            # darker and dashed lines look more comic like to me
+                )
+              }
+              , height=4, width = 6
+            )
+          )
+          , pattern = "glyph"
+          , replacement = "svg3-glyph"
+        )
+      )
+    )
+    ,tags$div(
+      id = "justr-withcomic"
+      ,tags$h3( "straight from R + comicR" )
+      ,HTML(
+        #  handle glyph id conflicts
+        gsub(
+          x = saveXML(
+            svgPlot(
+              {
+                plot(1:10, type = "b", bty = "l", col="chocolate3"
+                     , family = "Permanent Marker" # use Permanent Marker font from Google Fonts
+                     , lty = 2, lwd = 2            # darker and dashed lines look more comic like to me
+                )
+              }
+              , height=4, width = 6
+            )
+          )
+          , pattern = "glyph"
+          , replacement = "svg4-glyph"
+        )
+      )
+    )
+    ,comicR( "#justr-withcomic", ff = 5 )
+  )
+)
+
+library(lattice)
+
+dev.new( height = 10, width = 10, noRStudioGD = T )
+dev.set(which = tail(dev.list(),1))
+dotplot(variety ~ yield | year * site, data=barley)
+dot_svg <- grid.export(name="")$svg
 dev.off()
 
 browsable(
   tagList(
-    HTML(base64::img(tf))
-    , comicR( selector = "img" )
+    tags$div(
+      id = "lattice-comic"
+      tags$h3("lattice plot with comicR and Google font")
+      ,HTML(saveXML(addCSS(
+        dot_svg
+        , I("text { font-family : Architects Daughter; }")
+      )))
+    )
+    ,comicR( "#lattice-comic", ff = 5 )
   )
-)
-
-
-browsable(
-  tagList(
-    HTML(saveXML(svgPlot({plot(1:10, type = "b", bty = "l")}, height=4, width = 6)))
-    , comicR(  )
-  )
-)
-
-
+) %>>%
+  attachDependencies(list(
+    htmlDependency(
+      name = "ArchitectsDaughter"
+      ,version = "0.1"
+      ,src = c(href='http://fonts.googleapis.com/css?family=Architects+Daughter')
+      ,stylesheet = ""
+    )
+  ))
 
 
 library(SVGAnnotation)
@@ -91,29 +177,3 @@ svgPlot(
   HTML %>>%
   browsable
 
-
-
-
-# found this R logo in SVG
-
-#readLines("http://www.alice-dsl.net/~towolf/rlogo/Rlogo-novo.svg") %>>%
-readLines("http://www.alice-dsl.net/~towolf/rlogo/Rlogo-simple.svg") %>>%
-  HTML %>>%
-  tagList(
-    tags$script(
-      "[].forEach.call(document.getElementsByTagName('svg'),function(s){
-           new Vivus(s,{type: 'delayed',start:'autostart',delay:0,duration:500})
-      })"
-    )
-  ) %>>%
-  attachDependencies(
-    htmlDependency(
-      name="vivus"
-      ,version="0.1"
-      ,src=c("href"=
-               "http://maxwellito.github.io/vivus/dist"
-      )
-      ,script = "vivus.min.js"
-    )
-  ) %>>%
-  html_print
