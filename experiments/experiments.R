@@ -177,3 +177,35 @@ svgPlot(
   HTML %>>%
   browsable
 
+
+
+library(tmap)
+data(Europe)
+
+tf <- tempfile()
+svg(tf, family = "Permanent Marker")
+  qtm(Europe, fill="gdp_cap_est", text="iso_a3", text.cex="AREA", root=5, title="GDP per capita",
+     fill.textNA="Non-European countries", theme="Europe", fontfamily = "Permanent Marker")
+dev.off()
+
+tf %>>%
+  readLines %>>%
+  HTML %>>%
+  tagList(
+    comicR( ff = 3, msteps = 10)
+  ) %>>%
+  browsable()
+
+
+library(igraph)
+# example from igraph documentation
+g <- erdos.renyi.game(100, 1/100)
+comps <- clusters(g)$membership
+colbar <- rainbow(max(comps)+1)
+V(g)$color <- colbar[comps+1]
+
+svgPlot(plot(g, layout=layout.fruchterman.reingold, vertex.size=5, vertex.label=NA)) %>>%
+  saveXML %>>%
+  HTML %>>%
+  tagList(comicR(ff=3,msteps=20)) %>>%
+  browsable
