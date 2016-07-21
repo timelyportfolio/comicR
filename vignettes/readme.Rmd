@@ -156,6 +156,7 @@ tagList(
 
 ```{r}
 library(DiagrammeR)
+library(DiagrammeRsvg)
 
 #  using example from DiagrammeR Readme.md
 #  https://github.com/rich-iannone/DiagrammeR
@@ -181,7 +182,7 @@ digraph boxes_and_circles {
   E->6; 4->6; 5->7; 6->7; 3->8
 }
 ") %>>%
-  exportSVG %>>%
+  export_svg %>>%
   (
     tagList(
       tags$div(
