@@ -1,8 +1,8 @@
 dependencies:
-  - name: es5-shim
-    version: 4.1.1
-    src: htmlwidgets/es5-shim
-    script: es5-shim.min.js
+  - name: pathseg
+    version: 1.0.2
+    src: htmlwidgets/pathseg
+    script: pathseg.js
   - name: comic
     version: 0.961
     src: htmlwidgets/comic.js
