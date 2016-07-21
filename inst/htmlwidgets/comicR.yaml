@@ -4,6 +4,6 @@ dependencies:
     src: htmlwidgets/es5-shim
     script: es5-shim.min.js
   - name: comic
-    version: 4.1
+    version: 0.961
     src: htmlwidgets/comic.js
     script: comic.min.js

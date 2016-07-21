@@ -1,8 +1,8 @@
 Package: comicR
 Type: Package
 Title: comic (xkcd-like) effects for R output
-Version: 0.1
-Date: 2015-05-07
+Version: 0.2
+Date: 2016-07-20
 Author: c(
           person(
             "Balint", "Morvai"
